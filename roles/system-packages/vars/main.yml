@@ -1,0 +1,107 @@
+---
+# Package definitions for the system-packages role
+# These packages require sudo/elevated privileges to install
+# Organized by OS family and install mode (server, desktop, container)
+
+###############################################################################
+# GUI Applications
+# - macOS: installed via homebrew casks
+# - Linux: installed via Flatpak (Flathub)
+###############################################################################
+
+gui_apps:
+  darwin:
+    # Desktop mode - full GUI experience
+    desktop:
+      - bitwarden
+      - obsidian
+      - tailscale-app
+      - raycast
+      - ghostty
+      - alt-tab
+      - orbstack
+    # Server mode - minimal or no GUI
+    server: []
+    # Container mode - no GUI
+    container: []
+
+  linux:
+    # Desktop mode - GUI apps via Flatpak
+    desktop:
+      - com.bitwarden.desktop
+      - md.obsidian.Obsidian
+    server: []
+    container: []
+
+###############################################################################
+# Native Packages (OS package manager)
+# Packages installed via system package manager (requires sudo on Linux)
+# On macOS, these are installed via Homebrew (no sudo needed, but grouped here
+# for consistency as they are "system-level" dependencies)
+###############################################################################
+
+native_packages:
+  darwin:
+    common:
+      - libiconv
+      - imagemagick
+    desktop: []
+    server: []
+    container: []
+
+  debian:
+    common:
+      - libffi-dev
+    desktop:
+      - flatpak
+    server: []
+    container: []
+
+  fedora:
+    common: []
+    desktop:
+      - flatpak
+    server: []
+    container: []
+
+  arch:
+    common: []
+    desktop:
+      - flatpak
+    server: []
+    container: []
+
+  alpine:
+    common: []
+    desktop:
+      - flatpak
+    server: []
+    container: []
+
+###############################################################################
+# Mode-based Configuration
+# Controls which package types are enabled per mode
+###############################################################################
+
+syspkg_mode_config:
+  desktop:
+    install_gui_apps: true
+    install_native: true
+    install_flatpak: true
+
+  server:
+    install_gui_apps: false
+    install_native: true
+    install_flatpak: false
+
+  container:
+    install_gui_apps: false
+    install_native: true
+    install_flatpak: false
+
+###############################################################################
+# Flatpak Configuration (Linux only)
+###############################################################################
+
+flatpak_remote: flathub
+flatpak_remote_url: https://flathub.org/repo/flathub.flatpakrepo

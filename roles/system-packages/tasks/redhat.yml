@@ -1,0 +1,9 @@
+---
+# Native package installation for RedHat/Fedora
+
+- name: Install native packages (dnf)
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ native_pkgs }}"
+    state: present
+  when: native_pkgs | length > 0

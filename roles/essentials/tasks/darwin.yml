@@ -1,0 +1,29 @@
+---
+# Essential packages for macOS
+
+- name: Check if Xcode Command Line Tools are installed
+  ansible.builtin.stat:
+    path: /Library/Developer/CommandLineTools
+  register: xcode_clt
+
+- name: Install Xcode Command Line Tools
+  ansible.builtin.command:
+    cmd: xcode-select --install
+  when: not xcode_clt.stat.exists
+  register: xcode_install
+  failed_when: false
+  changed_when: xcode_install.rc == 0
+
+- name: Wait for Xcode Command Line Tools installation
+  ansible.builtin.pause:
+    prompt: |
+      Xcode Command Line Tools installation has been triggered.
+      Please complete the installation in the popup dialog, then press Enter to continue.
+  when:
+    - not xcode_clt.stat.exists
+    - xcode_install.rc == 0
+
+# Note: Git and other essentials on macOS are provided by:
+# 1. Xcode Command Line Tools (git, make, etc.)
+# 2. Homebrew (installed in homebrew role)
+# Zsh is the default shell on modern macOS

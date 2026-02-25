@@ -1,0 +1,23 @@
+---
+# GUI application installation via Homebrew casks (macOS)
+
+- name: Set Homebrew paths based on architecture
+  ansible.builtin.set_fact:
+    homebrew_prefix: "{{ '/opt/homebrew' if ansible_facts['architecture'] == 'arm64' else '/usr/local' }}"
+
+- name: Check if Homebrew is installed
+  ansible.builtin.stat:
+    path: "{{ homebrew_prefix }}/bin/brew"
+  register: homebrew_check
+
+- name: Install GUI apps via Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ gui_apps_to_install }}"
+    state: present
+    path: "{{ homebrew_prefix }}/bin"
+  when:
+    - homebrew_check.stat.exists
+    - gui_apps_to_install is defined
+    - gui_apps_to_install | length > 0
+  environment:
+    PATH: "{{ homebrew_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"

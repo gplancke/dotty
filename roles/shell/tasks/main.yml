@@ -1,0 +1,18 @@
+---
+# Shell role - Set zsh as default shell
+
+- name: Get zsh path
+  ansible.builtin.command:
+    cmd: which zsh
+  register: zsh_path
+  changed_when: false
+  failed_when: false
+
+- name: Set zsh as default shell
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    shell: "{{ zsh_path.stdout }}"
+  when:
+    - zsh_path.rc == 0
+    - zsh_path.stdout | length > 0

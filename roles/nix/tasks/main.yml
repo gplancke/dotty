@@ -1,0 +1,77 @@
+---
+# Nix role - Install Nix package manager using Determinate Systems installer
+
+- name: Check if Nix is already installed
+  ansible.builtin.stat:
+    path: /nix
+  register: nix_check
+
+# macOS: Manual installation required due to APFS volume issues with automated installer
+- name: Show macOS Nix installation instructions
+  when:
+    - ansible_os_family == 'Darwin'
+    - not nix_check.stat.exists
+  ansible.builtin.debug:
+    msg: |
+      ============================================================
+      MANUAL NIX INSTALLATION REQUIRED FOR macOS
+      ============================================================
+
+      The automated Nix installer has known issues on macOS Sequoia
+      with FileVault enabled. Please install Nix manually using the
+      official graphical installer:
+
+      1. Download the installer:
+         https://install.determinate.systems/determinate-pkg/stable/Universal
+
+      2. Run the downloaded .pkg file and follow the prompts
+
+      3. After installation completes, re-run: chezmoi apply
+
+      ============================================================
+
+# Linux: Automated installation
+- name: Install Nix on Linux
+  when:
+    - ansible_os_family != 'Darwin'
+    - not nix_check.stat.exists
+  block:
+    - name: Download Determinate Nix installer
+      ansible.builtin.get_url:
+        url: https://install.determinate.systems/nix
+        dest: /tmp/nix-installer.sh
+        mode: "0755"
+
+    - name: Run Nix installer
+      become: true
+      ansible.builtin.command:
+        cmd: /tmp/nix-installer.sh install --no-confirm
+      environment:
+        NIX_INSTALLER_NO_CONFIRM: "true"
+      register: nix_install
+
+    - name: Clean up installer
+      ansible.builtin.file:
+        path: /tmp/nix-installer.sh
+        state: absent
+
+- name: Verify Nix installation
+  when: nix_check.stat.exists or ansible_os_family != 'Darwin'
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.shell:
+    cmd: |
+      if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      fi
+      nix --version
+  args:
+    executable: /bin/bash
+  register: nix_version
+  changed_when: false
+  failed_when: false
+
+- name: Display Nix status
+  when: nix_check.stat.exists or ansible_os_family != 'Darwin'
+  ansible.builtin.debug:
+    msg: "{{ 'Nix installed: ' + nix_version.stdout if nix_version.rc == 0 else 'Nix installation pending shell restart' }}"

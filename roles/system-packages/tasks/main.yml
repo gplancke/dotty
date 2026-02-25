@@ -1,0 +1,107 @@
+---
+# System-packages role - Install native packages and GUI apps
+# These installations typically require sudo/elevated privileges
+#
+# Installation order:
+# 1. Set mode-based configuration facts
+# 2. Install native OS packages (system dependencies)
+# 3. Install GUI apps (casks on macOS, Flatpak on Linux)
+
+###############################################################################
+# Step 1: Set mode-based configuration
+###############################################################################
+
+- name: Set current install mode
+  ansible.builtin.set_fact:
+    current_mode: "{{ install_mode | default('server') }}"
+
+- name: Set mode configuration facts
+  ansible.builtin.set_fact:
+    syspkg_install_gui_apps: "{{ syspkg_mode_config[current_mode].install_gui_apps | default(false) }}"
+    syspkg_install_native: "{{ syspkg_mode_config[current_mode].install_native | default(true) }}"
+    syspkg_install_flatpak: "{{ syspkg_mode_config[current_mode].install_flatpak | default(false) }}"
+
+- name: Display system package installation plan
+  ansible.builtin.debug:
+    msg: |
+      System package installation plan for mode '{{ current_mode }}':
+        - Native packages: {{ syspkg_install_native }}
+        - GUI apps: {{ syspkg_install_gui_apps }}
+        - Flatpak (Linux): {{ syspkg_install_flatpak }}
+
+###############################################################################
+# Step 2: Determine OS-specific package lists
+###############################################################################
+
+- name: Set OS family key for package lookups
+  ansible.builtin.set_fact:
+    os_key: "{{ 'darwin' if ansible_facts['os_family'] == 'Darwin' else ansible_facts['distribution'] | lower }}"
+    os_family_key: "{{ 'darwin' if ansible_facts['os_family'] == 'Darwin' else 'linux' }}"
+
+# Build native package list: common + mode-specific
+- name: Build native package list
+  ansible.builtin.set_fact:
+    native_packages_to_install: >-
+      {{
+        (native_packages[os_key]['common'] | default([])) +
+        (native_packages[os_key][current_mode] | default([]))
+      }}
+  when: syspkg_install_native
+
+# Build GUI apps list for current mode
+- name: Build GUI apps list
+  ansible.builtin.set_fact:
+    gui_apps_to_install: "{{ gui_apps[os_family_key][current_mode] | default([]) }}"
+  when: syspkg_install_gui_apps
+
+###############################################################################
+# Step 3: Install native OS packages
+###############################################################################
+
+# macOS: Install native packages via Homebrew
+- name: Install native packages via Homebrew (macOS)
+  ansible.builtin.include_tasks: darwin.yml
+  when:
+    - syspkg_install_native
+    - ansible_facts['os_family'] == 'Darwin'
+    - native_packages_to_install is defined
+    - native_packages_to_install | length > 0
+
+# Linux: Include OS-specific native package tasks
+- name: Include OS-specific native package tasks (Linux)
+  ansible.builtin.include_tasks: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_facts['distribution'] | lower }}.yml"
+        - "{{ ansible_facts['os_family'] | lower }}.yml"
+      skip: true
+  vars:
+    native_pkgs: "{{ native_packages_to_install | default([]) }}"
+  when:
+    - syspkg_install_native
+    - ansible_facts['os_family'] != 'Darwin'
+    - native_packages_to_install is defined
+    - native_packages_to_install | length > 0
+
+###############################################################################
+# Step 4: Install GUI apps
+###############################################################################
+
+# macOS: Install GUI apps via Homebrew casks
+- name: Install GUI apps via Homebrew casks (macOS)
+  ansible.builtin.include_tasks: gui_casks.yml
+  when:
+    - syspkg_install_gui_apps
+    - ansible_facts['os_family'] == 'Darwin'
+    - gui_apps_to_install is defined
+    - gui_apps_to_install | length > 0
+
+# Linux: Install GUI apps via Flatpak
+- name: Install GUI apps via Flatpak (Linux)
+  ansible.builtin.include_tasks: flatpak.yml
+  when:
+    - syspkg_install_gui_apps
+    - syspkg_install_flatpak
+    - ansible_facts['os_family'] != 'Darwin'
+    - gui_apps_to_install is defined
+    - gui_apps_to_install | length > 0

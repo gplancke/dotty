@@ -1,0 +1,48 @@
+---
+# Package definitions for the packages role
+# NOTE: Native packages and GUI apps have been moved to the system-packages role
+# This role only handles: Homebrew packages, Nix, and Mise
+
+###############################################################################
+# Homebrew Packages
+# Additional brew formulae to install (beyond what's in Brewfile)
+# Use this for packages that must be installed before brew bundle
+###############################################################################
+
+brew_packages:
+  darwin:
+    common: []
+    desktop: []
+    server: []
+    container: []
+
+  linux:
+    common:
+      - imagemagick
+    desktop: []
+    server: []
+    container: []
+
+###############################################################################
+# Mode-based Configuration
+# Controls which package sources are enabled per mode
+###############################################################################
+
+mode_config:
+  desktop:
+    install_brew_packages: true
+    run_brew_bundle: true
+    run_nix: true
+    run_mise: true
+
+  server:
+    install_brew_packages: true
+    run_brew_bundle: true
+    run_nix: true
+    run_mise: true
+
+  container:
+    install_brew_packages: false
+    run_brew_bundle: false
+    run_nix: false
+    run_mise: false

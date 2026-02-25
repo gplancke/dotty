@@ -1,0 +1,64 @@
+---
+# Nix package installation via flake build, home-manager, or nix profile
+
+- name: Check if Nix is installed
+  ansible.builtin.stat:
+    path: /nix
+  register: nix_check
+
+- name: Check if flake.nix exists
+  ansible.builtin.stat:
+    path: "{{ target_home }}/.config/nix/flake.nix"
+  register: flake_check
+  when: nix_check.stat.exists
+
+- name: Build flake.nix if present
+  ansible.builtin.shell:
+    cmd: |
+      if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      fi
+      cd {{ target_home }}/.config/nix
+      nix build
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ target_home }}"
+  when:
+    - nix_check.stat.exists
+    - flake_check.stat.exists | default(false)
+  register: nix_build
+  changed_when: nix_build.rc == 0
+  failed_when: false
+
+- name: Check if home-manager is available
+  ansible.builtin.shell:
+    cmd: |
+      if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      fi
+      command -v home-manager
+  args:
+    executable: /bin/bash
+  register: home_manager_check
+  changed_when: false
+  failed_when: false
+  when: nix_check.stat.exists
+
+- name: Run home-manager switch
+  ansible.builtin.shell:
+    cmd: |
+      if [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      fi
+      home-manager switch --flake {{ target_home }}/.config/nix#{{ target_user }}
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ target_home }}"
+  when:
+    - nix_check.stat.exists
+    - home_manager_check.rc == 0
+  register: home_manager_switch
+  changed_when: "'activating' in home_manager_switch.stdout"
+  failed_when: false

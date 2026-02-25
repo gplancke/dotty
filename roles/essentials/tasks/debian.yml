@@ -1,0 +1,21 @@
+---
+# Essential packages for Debian-based systems
+
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install essential packages (Debian)
+  become: true
+  ansible.builtin.apt:
+    name: "{{ essential_packages.common + essential_packages.debian }}"
+    state: present
+
+- name: Set zsh as default shell for target user
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    shell: /bin/zsh
+  when: ansible_facts['os_family'] != 'Darwin'

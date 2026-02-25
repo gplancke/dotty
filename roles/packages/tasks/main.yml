@@ -1,0 +1,85 @@
+---
+# Packages role - Install user packages via homebrew, nix, and mise
+# NOTE: Native packages and GUI apps are now installed by the system-packages role
+#       in site.yml (bootstrap phase) since they require sudo on Linux.
+#
+# Installation order:
+# 1. Set mode-based configuration facts
+# 2. Install Homebrew packages/formulae
+# 3. Run brew bundle (Brewfile)
+# 4. Run Nix/home-manager
+# 5. Run Mise
+
+###############################################################################
+# Step 1: Set mode-based configuration
+###############################################################################
+
+- name: Set current install mode
+  ansible.builtin.set_fact:
+    current_mode: "{{ install_mode | default('server') }}"
+
+- name: Set mode configuration facts
+  ansible.builtin.set_fact:
+    pkg_install_brew: "{{ mode_config[current_mode].install_brew_packages | default(true) }}"
+    pkg_run_brew_bundle: "{{ mode_config[current_mode].run_brew_bundle | default(true) }}"
+    pkg_run_nix: "{{ mode_config[current_mode].run_nix | default(true) }}"
+    pkg_run_mise: "{{ mode_config[current_mode].run_mise | default(true) }}"
+
+- name: Display package installation plan
+  ansible.builtin.debug:
+    msg: |
+      Package installation plan for mode '{{ current_mode }}':
+        - Homebrew packages: {{ pkg_install_brew }}
+        - Brew bundle: {{ pkg_run_brew_bundle }}
+        - Nix/home-manager: {{ pkg_run_nix }}
+        - Mise tools: {{ pkg_run_mise }}
+
+###############################################################################
+# Step 2: Determine OS-specific package lists
+###############################################################################
+
+- name: Set OS family key for package lookups
+  ansible.builtin.set_fact:
+    os_family_key: "{{ 'darwin' if ansible_facts['os_family'] == 'Darwin' else 'linux' }}"
+
+# Build brew package list: common + mode-specific
+- name: Build brew package list
+  ansible.builtin.set_fact:
+    brew_packages_to_install: >-
+      {{
+        (brew_packages[os_family_key]['common'] | default([])) +
+        (brew_packages[os_family_key][current_mode] | default([]))
+      }}
+  when: pkg_install_brew
+
+###############################################################################
+# Step 3: Install Homebrew packages
+###############################################################################
+
+- name: Install Homebrew packages
+  ansible.builtin.include_tasks: brew.yml
+  vars:
+    brew_packages: "{{ brew_packages_to_install | default([]) }}"
+    brew_casks: []
+    brewfile_path: "{{ (target_home + '/.config/brew/Brewfile') if pkg_run_brew_bundle else '' }}"
+  when: pkg_install_brew or pkg_run_brew_bundle
+
+###############################################################################
+# Step 4: Install Nix packages
+###############################################################################
+
+- name: Install Nix packages
+  ansible.builtin.include_tasks: nix.yml
+  when:
+    - pkg_run_nix
+    - install_nix | default(true) | bool
+
+###############################################################################
+# Step 5: Install Mise tools
+###############################################################################
+
+- name: Install Mise tools
+  ansible.builtin.include_tasks: mise.yml
+  when:
+    - pkg_run_mise
+    - install_mise | default(true) | bool

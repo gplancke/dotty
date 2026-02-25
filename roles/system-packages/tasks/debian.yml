@@ -1,0 +1,15 @@
+---
+# Native package installation for Debian/Ubuntu
+
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install native packages (apt)
+  become: true
+  ansible.builtin.apt:
+    name: "{{ native_pkgs }}"
+    state: present
+  when: native_pkgs | length > 0

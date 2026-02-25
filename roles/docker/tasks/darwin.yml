@@ -1,0 +1,26 @@
+---
+# Docker on macOS
+# Docker Desktop or alternatives (colima, orbstack) are handled by Homebrew in chezmoi
+
+- name: Note about Docker on macOS
+  ansible.builtin.debug:
+    msg: |
+      Docker on macOS is handled by Homebrew in chezmoi post-hooks.
+      Options available in Brewfile:
+        - colima (lightweight Docker runtime)
+        - orbstack (via cask, if enabled)
+        - docker (CLI tools)
+      
+      Docker Desktop is not installed by default due to licensing.
+      Use colima or orbstack as alternatives.
+
+- name: Check if Docker CLI is available
+  ansible.builtin.command:
+    cmd: which docker
+  register: docker_cli_check
+  changed_when: false
+  failed_when: false
+
+- name: Docker CLI status
+  ansible.builtin.debug:
+    msg: "Docker CLI {{ 'is' if docker_cli_check.rc == 0 else 'is not' }} available. It will be installed via Homebrew."

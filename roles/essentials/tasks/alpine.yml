@@ -1,0 +1,19 @@
+---
+# Essential packages for Alpine Linux
+
+- name: Update apk cache
+  become: true
+  community.general.apk:
+    update_cache: true
+
+- name: Install essential packages (Alpine)
+  become: true
+  community.general.apk:
+    name: "{{ essential_packages.common + essential_packages.alpine }}"
+    state: present
+
+- name: Set zsh as default shell for target user
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    shell: /bin/zsh

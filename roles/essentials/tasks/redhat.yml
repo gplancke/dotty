@@ -1,0 +1,14 @@
+---
+# Essential packages for RedHat-based systems (Fedora, RHEL, CentOS)
+
+- name: Install essential packages (RedHat/Fedora)
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ essential_packages.common + essential_packages.fedora }}"
+    state: present
+
+- name: Set zsh as default shell for target user
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    shell: /bin/zsh

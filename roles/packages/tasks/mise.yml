@@ -1,0 +1,41 @@
+---
+# Mise tool installation
+
+- name: Check if mise is available
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      command -v mise
+  args:
+    executable: /bin/bash
+  register: mise_check
+  changed_when: false
+  failed_when: false
+
+- name: Run mise install (install tools from config)
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      mise install --yes
+  args:
+    executable: /bin/bash
+    chdir: "{{ target_home }}"
+  environment:
+    HOME: "{{ target_home }}"
+  when: mise_check.rc == 0
+  register: mise_install
+  changed_when: "'installed' in mise_install.stdout"
+  failed_when: false
+
+- name: Trust mise config
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      mise trust --all
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ target_home }}"
+  when: mise_check.rc == 0
+  changed_when: false
+  failed_when: false

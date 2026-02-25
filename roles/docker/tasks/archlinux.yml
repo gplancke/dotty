@@ -1,0 +1,33 @@
+---
+# Docker installation for Arch Linux
+
+- name: Check if Docker is already installed
+  ansible.builtin.command:
+    cmd: docker --version
+  register: docker_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Docker from pacman
+  become: true
+  community.general.pacman:
+    name:
+      - docker
+      - docker-compose
+      - docker-buildx
+    state: present
+  when: docker_check.rc != 0
+
+- name: Add target user to docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    groups: docker
+    append: true
+
+- name: Enable and start Docker service
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started

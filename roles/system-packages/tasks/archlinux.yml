@@ -1,0 +1,9 @@
+---
+# Native package installation for Arch Linux
+
+- name: Install native packages (pacman)
+  become: true
+  community.general.pacman:
+    name: "{{ native_pkgs }}"
+    state: present
+  when: native_pkgs | length > 0

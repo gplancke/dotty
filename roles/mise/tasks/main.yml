@@ -1,0 +1,50 @@
+---
+# Mise role - Install mise (formerly rtx) version manager
+
+- name: Check if mise is already installed
+  ansible.builtin.command:
+    cmd: which mise
+  register: mise_check
+  changed_when: false
+  failed_when: false
+
+- name: Install mise
+  when: mise_check.rc != 0
+  block:
+    - name: Download mise installer
+      ansible.builtin.get_url:
+        url: https://mise.run
+        dest: /tmp/mise-install.sh
+        mode: "0755"
+
+    - name: Run mise installer
+      become: true
+      become_user: "{{ target_user }}"
+      ansible.builtin.shell:
+        cmd: /tmp/mise-install.sh
+      args:
+        executable: /bin/bash
+      environment:
+        MISE_INSTALL_PATH: "{{ target_home }}/.local/bin/mise"
+
+    - name: Clean up installer
+      ansible.builtin.file:
+        path: /tmp/mise-install.sh
+        state: absent
+
+- name: Verify mise installation
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      mise --version
+  args:
+    executable: /bin/bash
+  register: mise_version
+  changed_when: false
+  failed_when: false
+
+- name: Display mise status
+  ansible.builtin.debug:
+    msg: "{{ 'Mise installed: ' + mise_version.stdout if mise_version.rc == 0 else 'Mise installation may require shell restart' }}"

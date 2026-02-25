@@ -1,0 +1,19 @@
+---
+# Essential packages for Arch Linux
+
+- name: Update pacman cache
+  become: true
+  community.general.pacman:
+    update_cache: true
+
+- name: Install essential packages (Arch)
+  become: true
+  community.general.pacman:
+    name: "{{ essential_packages.common + essential_packages.arch }}"
+    state: present
+
+- name: Set zsh as default shell for target user
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    shell: /bin/zsh

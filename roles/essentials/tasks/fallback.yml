@@ -1,0 +1,16 @@
+---
+# Fallback for unknown distributions
+
+- name: Warn about unsupported distribution
+  ansible.builtin.debug:
+    msg: |
+      Warning: Unsupported distribution '{{ ansible_facts['distribution'] }}'
+      OS Family: {{ ansible_facts['os_family'] }}
+      
+      Please install the following packages manually:
+      {{ essential_packages.common | join(', ') }}
+
+- name: Fail if essential packages cannot be installed
+  ansible.builtin.fail:
+    msg: "Cannot install essential packages on unsupported distribution: {{ ansible_facts['distribution'] }}"
+  when: false  # Set to true to enforce failure on unknown distros

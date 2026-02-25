@@ -1,0 +1,67 @@
+---
+# Homebrew role - Install Homebrew (macOS) or Linuxbrew (Linux)
+
+- name: Set Homebrew paths based on OS
+  ansible.builtin.set_fact:
+    homebrew_prefix: "{{ '/opt/homebrew' if ansible_facts['os_family'] == 'Darwin' and ansible_facts['architecture'] == 'arm64' else '/usr/local' if ansible_facts['os_family'] == 'Darwin' else '/home/linuxbrew/.linuxbrew' }}"
+    homebrew_install_script: "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+
+- name: Check if Homebrew is already installed
+  ansible.builtin.stat:
+    path: "{{ homebrew_prefix }}/bin/brew"
+  register: homebrew_check
+
+- name: Install Homebrew/Linuxbrew
+  when: not homebrew_check.stat.exists
+  block:
+    - name: Download Homebrew install script
+      ansible.builtin.get_url:
+        url: "{{ homebrew_install_script }}"
+        dest: /tmp/homebrew-install.sh
+        mode: "0755"
+
+    - name: Install Homebrew (macOS)
+      become: true
+      become_user: "{{ target_user }}"
+      ansible.builtin.command:
+        cmd: /bin/bash /tmp/homebrew-install.sh
+      environment:
+        NONINTERACTIVE: "1"
+      when: ansible_facts['os_family'] == 'Darwin'
+
+    - name: Install Linuxbrew (Linux)
+      when: ansible_facts['os_family'] != 'Darwin'
+      block:
+        - name: Create linuxbrew directory
+          become: true
+          ansible.builtin.file:
+            path: /home/linuxbrew
+            state: directory
+            owner: "{{ target_user }}"
+            group: "{{ target_group }}"
+            mode: "0755"
+
+        - name: Run Linuxbrew install script
+          become: true
+          become_user: "{{ target_user }}"
+          ansible.builtin.shell:
+            cmd: NONINTERACTIVE=1 /bin/bash /tmp/homebrew-install.sh
+          args:
+            creates: /home/linuxbrew/.linuxbrew/bin/brew
+
+    - name: Clean up install script
+      ansible.builtin.file:
+        path: /tmp/homebrew-install.sh
+        state: absent
+
+- name: Verify Homebrew installation
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.command:
+    cmd: "{{ homebrew_prefix }}/bin/brew --version"
+  register: brew_version
+  changed_when: false
+
+- name: Display Homebrew version
+  ansible.builtin.debug:
+    msg: "Homebrew installed: {{ brew_version.stdout | default('unknown') }}"

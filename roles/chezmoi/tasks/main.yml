@@ -1,0 +1,101 @@
+---
+# Chezmoi role — install chezmoi, deploy age key, run init/apply
+
+- name: Check if chezmoi is already installed
+  ansible.builtin.command:
+    cmd: which chezmoi
+  register: chezmoi_check
+  changed_when: false
+  failed_when: false
+
+- name: Install chezmoi
+  when: chezmoi_check.rc != 0
+  block:
+    - name: Download chezmoi installer
+      ansible.builtin.get_url:
+        url: https://get.chezmoi.io
+        dest: /tmp/chezmoi-install.sh
+        mode: "0755"
+
+    - name: Run chezmoi installer
+      become: true
+      become_user: "{{ target_user }}"
+      ansible.builtin.shell:
+        cmd: sh /tmp/chezmoi-install.sh -b "{{ target_home }}/.local/bin"
+      args:
+        executable: /bin/sh
+
+    - name: Clean up installer
+      ansible.builtin.file:
+        path: /tmp/chezmoi-install.sh
+        state: absent
+
+- name: Create chezmoi config directory
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.file:
+    path: "{{ target_home }}/.config/chezmoi"
+    state: directory
+    owner: "{{ target_user }}"
+    group: "{{ target_group }}"
+    mode: "0700"
+
+- name: Deploy age private key from vault
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.copy:
+    content: "{{ chezmoi_age_key }}"
+    dest: "{{ target_home }}/.config/chezmoi/key.txt"
+    owner: "{{ target_user }}"
+    group: "{{ target_group }}"
+    mode: "0600"
+  no_log: true
+
+- name: Deploy chezmoi config
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.template:
+    src: chezmoi.toml.j2
+    dest: "{{ target_home }}/.config/chezmoi/chezmoi.toml"
+    owner: "{{ target_user }}"
+    group: "{{ target_group }}"
+    mode: "0644"
+
+- name: Check if chezmoi source directory exists
+  ansible.builtin.stat:
+    path: "{{ target_home }}/.local/share/chezmoi/.chezmoiroot"
+  register: chezmoi_source
+
+- name: Check for chezmoi source dir (fallback)
+  ansible.builtin.stat:
+    path: "{{ target_home }}/.local/share/chezmoi"
+  register: chezmoi_source_dir
+
+- name: Initialize chezmoi (first run)
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.shell:
+    cmd: >
+      {{ target_home }}/.local/bin/chezmoi init --apply {{ chezmoi_repo }}
+      --promptString installMode={{ install_mode | default('server') }}
+  args:
+    executable: /bin/bash
+  environment:
+    PATH: "{{ target_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+    HOME: "{{ target_home }}"
+  when: not chezmoi_source_dir.stat.exists
+  register: chezmoi_init
+
+- name: Update chezmoi (subsequent runs)
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.shell:
+    cmd: "{{ target_home }}/.local/bin/chezmoi update --force"
+  args:
+    executable: /bin/bash
+  environment:
+    PATH: "{{ target_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+    HOME: "{{ target_home }}"
+  when: chezmoi_source_dir.stat.exists
+  register: chezmoi_update
+  changed_when: chezmoi_update.stdout | length > 0

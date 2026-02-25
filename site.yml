@@ -1,0 +1,70 @@
+---
+# Dotty — Ansible-first system provisioner
+# Single orchestrator playbook
+
+- name: Dotty System Provisioning
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  pre_tasks:
+    - name: Display target configuration
+      ansible.builtin.debug:
+        msg: |
+          OS: {{ ansible_facts['os_family'] }} ({{ ansible_facts['distribution'] | default('unknown') }})
+          User: {{ target_user }}
+          Home: {{ target_home }}
+          Mode: {{ install_mode | default('server') }}
+          Features:
+            - Homebrew: {{ install_homebrew }}
+            - Nix: {{ install_nix }}
+            - Mise: {{ install_mise }}
+            - Docker: {{ install_docker }}
+
+  roles:
+    # Phase 1: System foundation
+    - role: essentials
+      tags: [essentials]
+
+    - role: directories
+      tags: [directories]
+
+    - role: shell
+      tags: [shell]
+
+    # Phase 2: Package managers
+    - role: homebrew
+      when: install_homebrew | bool
+      tags: [homebrew]
+
+    - role: nix
+      when: install_nix | bool
+      tags: [nix]
+
+    - role: mise
+      when: install_mise | bool
+      tags: [mise]
+
+    - role: docker
+      when: install_docker | bool
+      tags: [docker]
+
+    # Phase 3: System packages
+    - role: system-packages
+      tags: [system-packages]
+
+    # Phase 4: Dotfiles
+    - role: chezmoi
+      tags: [chezmoi]
+
+    # # Phase 5: User packages (depends on dotfiles for Brewfile, nix flake, mise config)
+    # - role: packages
+    #   tags: [packages]
+
+  post_tasks:
+    - name: Display completion message
+      ansible.builtin.debug:
+        msg: |
+          Dotty provisioning complete!
+
+          System ready with mode '{{ install_mode | default('server') }}'.

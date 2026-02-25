@@ -1,0 +1,9 @@
+---
+# Essentials role - Install base packages including git
+
+- name: Include OS-specific tasks
+  ansible.builtin.include_tasks: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_facts['distribution'] | lower }}.yml"
+    - "{{ ansible_facts['os_family'] | lower }}.yml"
+    - "fallback.yml"
