@@ -57,9 +57,9 @@
     - role: chezmoi
       tags: [chezmoi]
 
-    # # Phase 5: User packages (depends on dotfiles for Brewfile, nix flake, mise config)
-    # - role: packages
-    #   tags: [packages]
+    # Phase 5: User packages (brew formulae, nix, mise tools)
+    - role: packages
+      tags: [packages]
 
   post_tasks:
     - name: Display completion message
