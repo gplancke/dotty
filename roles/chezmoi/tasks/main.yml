@@ -1,6 +1,11 @@
 ---
 # Chezmoi role — install chezmoi, deploy age key, run init/apply
 
+- name: Build PATH for chezmoi environment
+  ansible.builtin.set_fact:
+    chezmoi_path: >-
+      {{ target_home }}/.local/bin:{{ target_home }}/.local/share/mise/shims:{{ '/opt/homebrew' if ansible_facts['os_family'] == 'Darwin' and ansible_facts['architecture'] == 'arm64' else '/usr/local' if ansible_facts['os_family'] == 'Darwin' else '/home/linuxbrew/.linuxbrew' }}/bin:/nix/var/nix/profiles/default/bin:{{ ansible_facts['env']['PATH'] }}
+
 - name: Check if chezmoi is already installed
   ansible.builtin.command:
     cmd: which chezmoi
@@ -75,13 +80,14 @@
   become: true
   become_user: "{{ target_user }}"
   ansible.builtin.shell:
-    cmd: >
-      {{ target_home }}/.local/bin/chezmoi init --apply {{ chezmoi_repo }}
-      --promptString installMode={{ install_mode | default('server') }}
+    cmd: |
+      [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      {{ target_home }}/.local/bin/chezmoi init --apply {{ chezmoi_repo }} \
+        --promptString installMode={{ install_mode | default('server') }}
   args:
     executable: /bin/bash
   environment:
-    PATH: "{{ target_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+    PATH: "{{ chezmoi_path }}"
     HOME: "{{ target_home }}"
   when: not chezmoi_source_dir.stat.exists
   register: chezmoi_init
@@ -90,11 +96,13 @@
   become: true
   become_user: "{{ target_user }}"
   ansible.builtin.shell:
-    cmd: "{{ target_home }}/.local/bin/chezmoi update --force"
+    cmd: |
+      [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      {{ target_home }}/.local/bin/chezmoi update --force
   args:
     executable: /bin/bash
   environment:
-    PATH: "{{ target_home }}/.local/bin:{{ ansible_facts['env']['PATH'] }}"
+    PATH: "{{ chezmoi_path }}"
     HOME: "{{ target_home }}"
   when: chezmoi_source_dir.stat.exists
   register: chezmoi_update
