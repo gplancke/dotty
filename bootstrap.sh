@@ -111,7 +111,7 @@ clone_repo() {
 install_galaxy() {
   if [ -f "${DOTTY_DIR}/requirements.yml" ]; then
     printf '[DOTTY] Installing Ansible Galaxy requirements...\n'
-    ansible-galaxy collection install -r "${DOTTY_DIR}/requirements.yml" >/dev/null 2>&1
+    ansible-galaxy collection install -r "${DOTTY_DIR}/requirements.yml" >/dev/null
   fi
 }
 
