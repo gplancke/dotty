@@ -120,15 +120,27 @@ install_galaxy() {
 ###############################################
 prompt_mode() {
   printf '\nSelect install mode:\n'
-  printf '  1) server   (default)\n'
-  printf '  2) desktop\n'
+  printf '  1) dev        (default)\n'
+  printf '  2) full\n'
   printf '  3) container\n'
   printf 'Choice [1]: '
   read CHOICE < /dev/tty || CHOICE="1"
   case "$CHOICE" in
-    2) INSTALL_MODE="desktop" ;;
+    2) INSTALL_MODE="full" ;;
     3) INSTALL_MODE="container" ;;
-    *) INSTALL_MODE="server" ;;
+    *) INSTALL_MODE="dev" ;;
+  esac
+}
+
+###############################################
+# Prompt for GUI apps
+###############################################
+prompt_gui() {
+  printf '\nInstall GUI apps? [Y/n]: '
+  read GUI_CHOICE < /dev/tty || GUI_CHOICE="y"
+  case "$GUI_CHOICE" in
+    [nN]) INSTALL_GUI="false" ;;
+    *) INSTALL_GUI="true" ;;
   esac
 }
 
@@ -161,7 +173,8 @@ run_playbook() {
   ansible-playbook site.yml \
     --vault-password-file "${VAULT_PASS_FILE}" \
     ${BECOME_FLAG} \
-    -e "install_mode=${INSTALL_MODE}"
+    -e "install_mode=${INSTALL_MODE}" \
+    -e "install_gui=${INSTALL_GUI}"
 }
 
 ###############################################
@@ -189,6 +202,7 @@ main() {
   clone_repo
   install_galaxy
   prompt_mode
+  prompt_gui
   prompt_vault
   run_playbook
 

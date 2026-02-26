@@ -1,8 +1,5 @@
 encryption = "age"
 
-[data]
-    installMode = "{{ install_mode | default('server') }}"
-
 [age]
     identity = "~/.config/chezmoi/key.txt"
     recipient = "{{ chezmoi_age_recipient }}"

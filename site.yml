@@ -14,12 +14,13 @@
           OS: {{ ansible_facts['os_family'] }} ({{ ansible_facts['distribution'] | default('unknown') }})
           User: {{ target_user }}
           Home: {{ target_home }}
-          Mode: {{ install_mode | default('server') }}
+          Mode: {{ install_mode | default('dev') }}
           Features:
             - Homebrew: {{ install_homebrew }}
             - Nix: {{ install_nix }}
             - Mise: {{ install_mise }}
             - Docker: {{ install_docker }}
+            - GUI: {{ install_gui | default(true) }}
 
   roles:
     # Phase 1: System foundation
@@ -58,8 +59,8 @@
       tags: [chezmoi]
 
     # Phase 5: User packages (brew formulae, nix, mise tools)
-    - role: packages
-      tags: [packages]
+    - role: user-packages
+      tags: [user-packages]
 
   post_tasks:
     - name: Display completion message
@@ -67,4 +68,4 @@
         msg: |
           Dotty provisioning complete!
 
-          System ready with mode '{{ install_mode | default('server') }}'.
+          System ready with mode '{{ install_mode | default('dev') }}'.

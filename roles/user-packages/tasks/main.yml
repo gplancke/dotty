@@ -1,5 +1,5 @@
 ---
-# Packages role - Install user packages via homebrew, nix, and mise
+# User-packages role - Install user packages via homebrew, nix, and mise
 # NOTE: Native packages and GUI apps are now installed by the system-packages role
 #       in site.yml (bootstrap phase) since they require sudo on Linux.
 #
@@ -15,21 +15,21 @@
 
 - name: Set current install mode
   ansible.builtin.set_fact:
-    current_mode: "{{ install_mode | default('server') }}"
+    current_mode: "{{ install_mode | default('dev') }}"
 
-# Mode hierarchy: desktop ⊃ server ⊃ minimal
+# Mode hierarchy: full ⊃ dev ⊃ minimal
 - name: Set mode hierarchy
   ansible.builtin.set_fact:
     mode_hierarchy:
       minimal:
         - minimal
-      server:
+      dev:
         - minimal
-        - server
-      desktop:
+        - dev
+      full:
         - minimal
-        - server
-        - desktop
+        - dev
+        - full
 
 - name: Set mode configuration facts
   ansible.builtin.set_fact:

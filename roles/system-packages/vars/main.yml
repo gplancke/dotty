@@ -1,7 +1,7 @@
 ---
 # Package definitions for the system-packages role
 # These packages require sudo/elevated privileges to install
-# Organized by OS family and install mode (server, desktop, minimal)
+# Organized by OS family and install mode (dev, full, minimal)
 
 ###############################################################################
 # GUI Applications
@@ -11,8 +11,8 @@
 
 gui_apps:
   darwin:
-    # Desktop mode - full GUI experience
-    desktop:
+    # Full mode - full GUI experience
+    full:
       - bitwarden
       - obsidian
       - tailscale-app
@@ -20,17 +20,17 @@ gui_apps:
       - ghostty
       - alt-tab
       - orbstack
-    # Server mode - minimal or no GUI
-    server: []
+    # Dev mode - minimal or no GUI
+    dev: []
     # Minimal mode - no GUI
     minimal: []
 
   linux:
-    # Desktop mode - GUI apps via Flatpak
-    desktop:
+    # Full mode - GUI apps via Flatpak
+    full:
       - com.bitwarden.desktop
       - md.obsidian.Obsidian
-    server: []
+    dev: []
     minimal: []
 
 ###############################################################################
@@ -45,59 +45,54 @@ native_packages:
     common:
       - libiconv
       - imagemagick
-    desktop: []
-    server: []
+    full: []
+    dev: []
     minimal: []
 
   debian:
     common:
       - libffi-dev
-    desktop:
+    full:
       - flatpak
-    server: []
+    dev: []
     minimal: []
 
   fedora:
     common: []
-    desktop:
+    full:
       - flatpak
-    server: []
+    dev: []
     minimal: []
 
   arch:
     common: []
-    desktop:
+    full:
       - flatpak
-    server: []
+    dev: []
     minimal: []
 
   alpine:
     common: []
-    desktop:
+    full:
       - flatpak
-    server: []
+    dev: []
     minimal: []
 
 ###############################################################################
 # Mode-based Configuration
 # Controls which package types are enabled per mode
+# Note: GUI apps and Flatpak are now controlled by the `install_gui` parameter
 ###############################################################################
 
 syspkg_mode_config:
-  desktop:
-    install_gui_apps: true
+  full:
     install_native: true
-    install_flatpak: true
 
-  server:
-    install_gui_apps: false
+  dev:
     install_native: true
-    install_flatpak: false
 
   minimal:
-    install_gui_apps: false
     install_native: true
-    install_flatpak: false
 
 ###############################################################################
 # Flatpak Configuration (Linux only)

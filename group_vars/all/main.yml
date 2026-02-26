@@ -1,6 +1,9 @@
 ---
-# Install mode: server, desktop, or minimal
-install_mode: server
+# Install mode: dev, full, or minimal
+install_mode: dev
+
+# Install GUI apps (decoupled from mode)
+install_gui: true
 
 # Target user configuration
 target_user: "{{ ansible_facts['user_id'] }}"
@@ -19,7 +22,7 @@ user_directories:
 install_homebrew: "{{ install_mode != 'minimal' }}"
 install_nix: false
 install_mise: "{{ install_mode != 'minimal' }}"
-install_docker: "{{ install_mode in ['server', 'desktop'] }}"
+install_docker: "{{ install_mode in ['dev', 'full'] }}"
 
 # Essential packages
 essential_packages:

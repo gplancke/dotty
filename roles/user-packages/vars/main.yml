@@ -1,5 +1,5 @@
 ---
-# Package definitions for the packages role
+# Package definitions for the user-packages role
 # NOTE: Native packages and GUI apps have been moved to the system-packages role
 # This role only handles: Homebrew formulae, Nix, and Mise tools
 
@@ -9,8 +9,8 @@
 # No more Brewfile — packages are listed here and installed directly.
 #
 # Structure: common (cross-OS, per-mode) + per-OS per-mode lists.
-# Mode hierarchy: desktop ⊃ server ⊃ minimal
-# Lists are accumulated: a desktop build includes minimal + server + desktop.
+# Mode hierarchy: full ⊃ dev ⊃ minimal
+# Lists are accumulated: a full build includes minimal + dev + full.
 #
 # Entries can be a plain string or a dict with keys:
 #   name:            (required) formula name
@@ -42,7 +42,7 @@ brew_packages:
       - unzip
       - watch
       - zoxide
-    server:
+    dev:
       - btop
       - claude-code
       - diff-so-fancy
@@ -53,7 +53,7 @@ brew_packages:
       - psviderski/tap/uncloud
       - rclone
       - starship
-    desktop:
+    full:
       - cairo
       - duckdb
       - fossil
@@ -67,23 +67,23 @@ brew_packages:
     minimal:
       - openssl@3
       - qemu
-    server:
+    dev:
       - cocoapods
       - zsh
-    desktop:
+    full:
       - terminal-notifier
 
   linux:
     minimal: []
-    server: []
-    desktop:
+    dev: []
+    full:
       - ideviceinstaller
 
 ###############################################################################
 # Mise Packages
 # Tools to install globally via `mise use --global`.
 # Flat across OS — only split by mode.
-# Mode hierarchy: desktop ⊃ server ⊃ minimal
+# Mode hierarchy: full ⊃ dev ⊃ minimal
 ###############################################################################
 
 mise_packages:
@@ -94,7 +94,7 @@ mise_packages:
     - python
     - rust
     - uv
-  server:
+  dev:
     - ansible
     - bun
     - lua-language-server
@@ -105,13 +105,13 @@ mise_packages:
     - npm:typescript
     - npm:typescript-language-server
     - npm:vscode-langservers-extracted
-    - pnpm
-  desktop:
-    - flutter
-    - java
     - pipx
     - pipx:pyright
     - pipx:ruff
+    - pnpm
+  full:
+    - flutter
+    - java
     - ruby
 
 ###############################################################################
@@ -120,12 +120,12 @@ mise_packages:
 ###############################################################################
 
 mode_config:
-  desktop:
+  full:
     install_brew_packages: true
     install_mise_packages: true
     install_nix_packages: true
 
-  server:
+  dev:
     install_brew_packages: true
     install_mise_packages: true
     install_nix_packages: true
