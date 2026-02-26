@@ -82,8 +82,7 @@
   ansible.builtin.shell:
     cmd: |
       [ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ] && . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-      {{ target_home }}/.local/bin/chezmoi init --apply {{ chezmoi_repo }} \
-        --promptString installMode={{ install_mode | default('server') }}
+      {{ target_home }}/.local/bin/chezmoi init --apply {{ chezmoi_repo }}
   args:
     executable: /bin/bash
   environment:
