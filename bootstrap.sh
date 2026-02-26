@@ -146,12 +146,12 @@ prompt_mode() {
   printf '\nSelect install mode:\n'
   printf '  1) dev        (default)\n'
   printf '  2) full\n'
-  printf '  3) container\n'
+  printf '  3) minimal\n'
   printf 'Choice [1]: '
   read CHOICE < /dev/tty || CHOICE="1"
   case "$CHOICE" in
     2) INSTALL_MODE="full" ;;
-    3) INSTALL_MODE="container" ;;
+    3) INSTALL_MODE="minimal" ;;
     *) INSTALL_MODE="dev" ;;
   esac
 }

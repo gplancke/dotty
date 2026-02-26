@@ -19,9 +19,9 @@ user_directories:
   - "{{ target_home }}/Workspace/Projects"
 
 # Feature flags — controlled by install_mode
-install_homebrew: "{{ install_mode != 'minimal' }}"
+install_homebrew: true
 install_nix: false
-install_mise: "{{ install_mode != 'minimal' }}"
+install_mise: true
 install_docker: "{{ install_mode in ['dev', 'full'] }}"
 
 # Essential packages

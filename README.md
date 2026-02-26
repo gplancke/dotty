@@ -26,11 +26,11 @@ The bootstrap script prompts for one of three modes:
 
 | Mode | Description |
 |---|---|
-| `container` | Minimal — no Homebrew, Mise, or Docker |
+| `minimal` | Bare essentials — no Docker, fewer packages |
 | `dev` (default) | Development workstation — all CLI tools, no GUI apps by default |
 | `full` | Everything in dev + extra packages (Flutter, Java, Ruby, etc.) |
 
-A separate `install_gui` flag (default `true`) controls GUI app installation independently of the mode. This allows combinations like `dev` + GUI or `full` without GUI.
+A separate `install_gui` flag (default `false`) controls GUI app installation independently of the mode. This allows combinations like `dev` + GUI or `full` without GUI.
 
 ## Supported Platforms
 
@@ -52,7 +52,7 @@ A separate `install_gui` flag (default `true`) controls GUI app installation ind
 You can safely re-run dotty at any time. Key behaviors:
 
 - **Switching `install_mode`** — The chezmoi config is re-deployed every run, so dotfiles reflect the new mode immediately.
-- **Package managers are install-only** — Homebrew, Mise, Docker, and Nix are installed but never removed. Switching to `container` mode skips those roles but does not uninstall previously-installed tools. To fully clean up, uninstall unwanted tools manually.
+- **Package managers are install-only** — Homebrew, Mise, Docker, and Nix are installed but never removed. Switching to `minimal` mode skips those roles but does not uninstall previously-installed tools. To fully clean up, uninstall unwanted tools manually.
 - **Idempotent** — Every role is safe to run repeatedly. Re-running on an already-provisioned machine is a no-op for components that are already present.
 
 ## Gotchas
@@ -67,11 +67,11 @@ You can safely re-run dotty at any time. Key behaviors:
 
 Feature flags and variables live in `group_vars/all/main.yml`. Key toggles:
 
-- `install_homebrew` — Enabled unless container mode
+- `install_homebrew` — Always enabled
 - `install_nix` — Disabled by default
-- `install_mise` — Enabled unless container mode
+- `install_mise` — Always enabled
 - `install_docker` — Enabled for dev/full
-- `install_gui` — GUI apps (casks / Flatpak), default true
+- `install_gui` — GUI apps (casks / Flatpak), default false
 
 Secrets (chezmoi age key) are stored in `group_vars/all/vault.yml` (Ansible Vault encrypted).
 
