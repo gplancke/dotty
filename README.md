@@ -45,6 +45,14 @@ The bootstrap script prompts for one of three modes:
 - Internet access
 - `sudo` access (non-root user)
 
+## Re-running
+
+You can safely re-run dotty at any time. Key behaviors:
+
+- **Switching `install_mode`** — The chezmoi config is re-deployed every run, so dotfiles reflect the new mode immediately. `chezmoi update --force` re-applies all templates with the updated mode.
+- **Package managers are install-only** — Homebrew, Mise, Docker, and Nix are installed but never removed. Switching to `container` mode skips those roles but does not uninstall previously-installed tools. To fully clean up, uninstall unwanted tools manually.
+- **Idempotent** — Every role is safe to run repeatedly. Re-running on an already-provisioned machine is a no-op for components that are already present.
+
 ## Gotchas
 
 - **macOS: Xcode CLT** — Must be installed before running bootstrap. The script will prompt but exits if missing.
