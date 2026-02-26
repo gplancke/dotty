@@ -8,7 +8,7 @@ Ansible-first system provisioner for macOS and Linux.
 sh -c "$(curl -fsSL https://raw.github.com/gplancke/dotty/main/bootstrap.sh)"
 ```
 
-The bootstrap script installs Python, pip, and Ansible, then clones this repo and runs the main playbook. You'll be prompted to choose an install mode and enter the vault password.
+The bootstrap script installs Python, pip, and Ansible, then clones this repo and runs the main playbook. You'll be prompted to choose an install mode, whether to install GUI apps, and enter the vault password.
 
 ## What It Does
 
@@ -26,9 +26,11 @@ The bootstrap script prompts for one of three modes:
 
 | Mode | Description |
 |---|---|
-| `server` (default) | Full provisioning without GUI apps |
-| `desktop` | Everything in server + GUI casks / Flatpak |
 | `container` | Minimal — no Homebrew, Mise, or Docker |
+| `dev` (default) | Development workstation — all CLI tools, no GUI apps by default |
+| `full` | Everything in dev + extra packages (Flutter, Java, Ruby, etc.) |
+
+A separate `install_gui` flag (default `true`) controls GUI app installation independently of the mode. This allows combinations like `dev` + GUI or `full` without GUI.
 
 ## Supported Platforms
 
@@ -49,7 +51,7 @@ The bootstrap script prompts for one of three modes:
 
 You can safely re-run dotty at any time. Key behaviors:
 
-- **Switching `install_mode`** — The chezmoi config is re-deployed every run, so dotfiles reflect the new mode immediately. `chezmoi update --force` re-applies all templates with the updated mode.
+- **Switching `install_mode`** — The chezmoi config is re-deployed every run, so dotfiles reflect the new mode immediately.
 - **Package managers are install-only** — Homebrew, Mise, Docker, and Nix are installed but never removed. Switching to `container` mode skips those roles but does not uninstall previously-installed tools. To fully clean up, uninstall unwanted tools manually.
 - **Idempotent** — Every role is safe to run repeatedly. Re-running on an already-provisioned machine is a no-op for components that are already present.
 
@@ -68,7 +70,8 @@ Feature flags and variables live in `group_vars/all/main.yml`. Key toggles:
 - `install_homebrew` — Enabled unless container mode
 - `install_nix` — Disabled by default
 - `install_mise` — Enabled unless container mode
-- `install_docker` — Enabled for server/desktop
+- `install_docker` — Enabled for dev/full
+- `install_gui` — GUI apps (casks / Flatpak), default true
 
 Secrets (chezmoi age key) are stored in `group_vars/all/vault.yml` (Ansible Vault encrypted).
 
@@ -96,6 +99,6 @@ Secrets (chezmoi age key) are stored in `group_vars/all/vault.yml` (Ansible Vaul
     ├── mise/                 # Mise runtime manager
     ├── docker/               # Docker per distro
     ├── system-packages/      # Distro packages, GUI casks, Flatpak
-    ├── packages/             # User packages (brew, nix, mise)
+    ├── user-packages/        # User packages (brew, nix, mise)
     └── chezmoi/              # Dotfiles with age encryption
 ```
