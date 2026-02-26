@@ -18,6 +18,10 @@
 #   install_options:  (optional) extra brew install flags
 ###############################################################################
 
+brew_taps:
+  - tinted-theming/tinted
+  - psviderski/tap
+
 brew_packages:
   common:
     minimal:
