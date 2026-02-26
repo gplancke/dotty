@@ -5,10 +5,9 @@
 #
 # Installation order:
 # 1. Set mode-based configuration facts
-# 2. Install Homebrew packages/formulae
-# 3. Run brew bundle (Brewfile)
-# 4. Run Nix/home-manager
-# 5. Run Mise
+# 2. Install Homebrew formulae
+# 3. Run Nix/home-manager
+# 4. Install Mise tools
 
 ###############################################################################
 # Step 1: Set mode-based configuration
@@ -18,21 +17,33 @@
   ansible.builtin.set_fact:
     current_mode: "{{ install_mode | default('server') }}"
 
+# Mode hierarchy: desktop ⊃ server ⊃ minimal
+- name: Set mode hierarchy
+  ansible.builtin.set_fact:
+    mode_hierarchy:
+      minimal:
+        - minimal
+      server:
+        - minimal
+        - server
+      desktop:
+        - minimal
+        - server
+        - desktop
+
 - name: Set mode configuration facts
   ansible.builtin.set_fact:
     pkg_install_brew: "{{ mode_config[current_mode].install_brew_packages | default(true) }}"
-    pkg_run_brew_bundle: "{{ mode_config[current_mode].run_brew_bundle | default(true) }}"
-    pkg_run_nix: "{{ mode_config[current_mode].run_nix | default(true) }}"
-    pkg_run_mise: "{{ mode_config[current_mode].run_mise | default(true) }}"
+    pkg_install_mise: "{{ mode_config[current_mode].install_mise_packages | default(true) }}"
+    pkg_install_nix: "{{ mode_config[current_mode].install_nix_packages | default(true) }}"
 
 - name: Display package installation plan
   ansible.builtin.debug:
     msg: |
       Package installation plan for mode '{{ current_mode }}':
         - Homebrew packages: {{ pkg_install_brew }}
-        - Brew bundle: {{ pkg_run_brew_bundle }}
-        - Nix/home-manager: {{ pkg_run_nix }}
-        - Mise tools: {{ pkg_run_mise }}
+        - Nix/home-manager: {{ pkg_install_nix }}
+        - Mise tools: {{ pkg_install_mise }}
 
 ###############################################################################
 # Step 2: Determine OS-specific package lists
@@ -42,15 +53,24 @@
   ansible.builtin.set_fact:
     os_family_key: "{{ 'darwin' if ansible_facts['os_family'] == 'Darwin' else 'linux' }}"
 
-# Build brew package list: common + mode-specific
+# Build brew package list: common mode-specific + OS mode-specific lists
 - name: Build brew package list
   ansible.builtin.set_fact:
     brew_packages_to_install: >-
       {{
-        (brew_packages[os_family_key]['common'] | default([])) +
-        (brew_packages[os_family_key][current_mode] | default([]))
+        (mode_hierarchy[current_mode] | map('extract', brew_packages['common']) | select('defined') | flatten) +
+        (mode_hierarchy[current_mode] | map('extract', brew_packages[os_family_key]) | select('defined') | flatten)
       }}
   when: pkg_install_brew
+
+# Build mise package list: accumulated mode-specific lists
+- name: Build mise package list
+  ansible.builtin.set_fact:
+    mise_packages_to_install: >-
+      {{
+        mode_hierarchy[current_mode] | map('extract', mise_packages) | select('defined') | flatten
+      }}
+  when: pkg_install_mise
 
 ###############################################################################
 # Step 3: Install Homebrew packages
@@ -58,11 +78,7 @@
 
 - name: Install Homebrew packages
   ansible.builtin.include_tasks: brew.yml
-  vars:
-    brew_packages: "{{ brew_packages_to_install | default([]) }}"
-    brew_casks: []
-    brewfile_path: "{{ (target_home + '/.config/brew/Brewfile') if pkg_run_brew_bundle else '' }}"
-  when: pkg_install_brew or pkg_run_brew_bundle
+  when: pkg_install_brew
 
 ###############################################################################
 # Step 4: Install Nix packages
@@ -71,7 +87,7 @@
 - name: Install Nix packages
   ansible.builtin.include_tasks: nix.yml
   when:
-    - pkg_run_nix
+    - pkg_install_nix
     - install_nix | default(true) | bool
 
 ###############################################################################
@@ -81,5 +97,6 @@
 - name: Install Mise tools
   ansible.builtin.include_tasks: mise.yml
   when:
-    - pkg_run_mise
+    - pkg_install_mise
     - install_mise | default(true) | bool
+    - mise_packages_to_install | default([]) | length > 0

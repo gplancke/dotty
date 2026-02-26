@@ -1,27 +1,82 @@
 ---
 # Package definitions for the packages role
 # NOTE: Native packages and GUI apps have been moved to the system-packages role
-# This role only handles: Homebrew packages, Nix, and Mise
+# This role only handles: Homebrew formulae, Nix, and Mise tools
 
 ###############################################################################
 # Homebrew Packages
-# Additional brew formulae to install (beyond what's in Brewfile)
-# Use this for packages that must be installed before brew bundle
+# Ansible is the single source of truth for brew formulae.
+# No more Brewfile — packages are listed here and installed directly.
+#
+# Structure: common (cross-OS, per-mode) + per-OS per-mode lists.
+# Mode hierarchy: desktop ⊃ server ⊃ minimal
+# Lists are accumulated: a desktop build includes minimal + server + desktop.
 ###############################################################################
 
 brew_packages:
+  common:
+    minimal:
+      - age
+      - ca-certificates
+      - curl
+      - diff-so-fancy
+      - difi
+      - fd
+      - fzf
+      - gcc
+      - git
+      - jq
+      - llvm
+      - luarocks
+      - neovim
+      - tinted-theming/tinted/tinty
+      - the_silver_searcher
+      - tmux
+      - tree-sitter
+      - tree-sitter-cli
+      - unzip
+      - watch
+      - zoxide
+    server:
+      - btop
+      - claude-code
+      - gh
+      - lazygit
+      - psviderski/tap/uncloud
+      - rclone
+      - starship
+    desktop:
+      - cairo
+      - imagemagick
+      - lazydocker
+      - trivy
+
   darwin:
-    common: []
-    desktop: []
-    server: []
-    container: []
+    minimal:
+      - openssl@3
+      - qemu
+      - zsh
+    server:
+      - cocoapods
+    desktop:
+      - terminal-notifier
 
   linux:
-    common:
-      - imagemagick
-    desktop: []
+    minimal: []
     server: []
-    container: []
+    desktop: []
+
+###############################################################################
+# Mise Packages
+# Tools to install globally via `mise use --global`.
+# Flat across OS — only split by mode.
+# Mode hierarchy: desktop ⊃ server ⊃ minimal
+###############################################################################
+
+mise_packages:
+  minimal: []
+  server: []
+  desktop: []
 
 ###############################################################################
 # Mode-based Configuration
@@ -31,18 +86,15 @@ brew_packages:
 mode_config:
   desktop:
     install_brew_packages: true
-    run_brew_bundle: true
-    run_nix: true
-    run_mise: true
+    install_mise_packages: true
+    install_nix_packages: true
 
   server:
     install_brew_packages: true
-    run_brew_bundle: true
-    run_nix: true
-    run_mise: true
+    install_mise_packages: true
+    install_nix_packages: true
 
-  container:
+  minimal:
     install_brew_packages: false
-    run_brew_bundle: false
-    run_nix: false
-    run_mise: false
+    install_mise_packages: false
+    install_nix_packages: false
