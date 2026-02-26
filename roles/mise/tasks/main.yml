@@ -32,6 +32,19 @@
         path: /tmp/mise-install.sh
         state: absent
 
+- name: Enable mise lockfile
+  become: true
+  become_user: "{{ target_user }}"
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      mise settings lockfile=true
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ target_home }}"
+  changed_when: false
+
 - name: Verify mise installation
   become: true
   become_user: "{{ target_user }}"

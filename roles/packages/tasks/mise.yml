@@ -1,5 +1,8 @@
 ---
 # Mise tool installation
+# Two-step approach per tool:
+# - If tool is NOT in global config: `mise use --global tool@latest` (adds + installs + locks)
+# - If tool IS in global config: `mise install tool` (installs at locked version, no upgrade)
 
 - name: Check if mise is available
   ansible.builtin.shell:
@@ -12,20 +15,52 @@
   changed_when: false
   failed_when: false
 
-- name: Run mise install (install tools from config)
+- name: Check which mise tools are already in global config
   ansible.builtin.shell:
     cmd: |
       export PATH="{{ target_home }}/.local/bin:$PATH"
-      mise install --yes
+      mise ls --global --json 2>/dev/null | grep -o '"{{ item }}"' || true
   args:
     executable: /bin/bash
-    chdir: "{{ target_home }}"
   environment:
     HOME: "{{ target_home }}"
-  when: mise_check.rc == 0
-  register: mise_install
-  changed_when: "'installed' in mise_install.stdout"
+  loop: "{{ mise_packages_to_install }}"
+  register: mise_global_check
+  changed_when: false
   failed_when: false
+  when: mise_check.rc == 0
+
+- name: Add new mise tools globally (mise use --global)
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      mise use --global {{ item.item }}@latest
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ target_home }}"
+  loop: "{{ mise_global_check.results }}"
+  when:
+    - mise_check.rc == 0
+    - item.stdout | default('') | length == 0
+  register: mise_use
+  changed_when: "'installed' in (mise_use.stderr | default(''))"
+
+- name: Install existing mise tools at locked version (mise install)
+  ansible.builtin.shell:
+    cmd: |
+      export PATH="{{ target_home }}/.local/bin:$PATH"
+      mise install {{ item.item }}
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ target_home }}"
+  loop: "{{ mise_global_check.results }}"
+  when:
+    - mise_check.rc == 0
+    - item.stdout | default('') | length > 0
+  register: mise_install
+  changed_when: "'installed' in (mise_install.stderr | default(''))"
 
 - name: Trust mise config
   ansible.builtin.shell:
