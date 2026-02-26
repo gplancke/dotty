@@ -136,11 +136,11 @@ prompt_mode() {
 # Prompt for GUI apps
 ###############################################
 prompt_gui() {
-  printf '\nInstall GUI apps? [Y/n]: '
-  read GUI_CHOICE < /dev/tty || GUI_CHOICE="y"
+  printf '\nInstall GUI apps? [y/N]:'
+  read GUI_CHOICE < /dev/tty || GUI_CHOICE="n"
   case "$GUI_CHOICE" in
-    [nN]) INSTALL_GUI="false" ;;
-    *) INSTALL_GUI="true" ;;
+    [yY]) INSTALL_GUI="true" ;;
+    *) INSTALL_GUI="false" ;;
   esac
 }
 
