@@ -15,7 +15,8 @@
       "Bash(python3:*)",
       "WebFetch(domain:docs.ansible.com)",
       "Bash(mise ls:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(bash:*)"
     ]
   }
 }
