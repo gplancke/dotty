@@ -35,6 +35,30 @@ detect_os() {
 }
 
 ###############################################
+# Install git (Linux only)
+###############################################
+install_git() {
+  command -v git >/dev/null 2>&1 && return 0
+
+  printf '[DOTTY] Installing git...\n'
+  case "$DISTRO" in
+    debian)
+      sudo apt-get update -qq
+      sudo apt-get install -qq -y git >/dev/null
+      ;;
+    fedora)
+      sudo dnf install -q -y git >/dev/null
+      ;;
+    arch)
+      sudo pacman -S --noconfirm -q git >/dev/null 2>&1
+      ;;
+    alpine)
+      sudo apk add -q git
+      ;;
+  esac
+}
+
+###############################################
 # Install python3 + pip (Linux only)
 ###############################################
 install_python() {
@@ -198,6 +222,7 @@ main() {
     exit 1
   fi
 
+  install_git
   install_ansible
   clone_repo
   install_galaxy
