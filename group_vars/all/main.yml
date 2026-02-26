@@ -1,5 +1,5 @@
 ---
-# Install mode: server, desktop, or container
+# Install mode: server, desktop, or minimal
 install_mode: server
 
 # Target user configuration
@@ -16,9 +16,9 @@ user_directories:
   - "{{ target_home }}/Workspace/Projects"
 
 # Feature flags — controlled by install_mode
-install_homebrew: "{{ install_mode != 'container' }}"
+install_homebrew: "{{ install_mode != 'minimal' }}"
 install_nix: false
-install_mise: "{{ install_mode != 'container' }}"
+install_mise: "{{ install_mode != 'minimal' }}"
 install_docker: "{{ install_mode in ['server', 'desktop'] }}"
 
 # Essential packages

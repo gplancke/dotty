@@ -1,7 +1,7 @@
 ---
 # Package definitions for the system-packages role
 # These packages require sudo/elevated privileges to install
-# Organized by OS family and install mode (server, desktop, container)
+# Organized by OS family and install mode (server, desktop, minimal)
 
 ###############################################################################
 # GUI Applications
@@ -22,8 +22,8 @@ gui_apps:
       - orbstack
     # Server mode - minimal or no GUI
     server: []
-    # Container mode - no GUI
-    container: []
+    # Minimal mode - no GUI
+    minimal: []
 
   linux:
     # Desktop mode - GUI apps via Flatpak
@@ -31,7 +31,7 @@ gui_apps:
       - com.bitwarden.desktop
       - md.obsidian.Obsidian
     server: []
-    container: []
+    minimal: []
 
 ###############################################################################
 # Native Packages (OS package manager)
@@ -47,7 +47,7 @@ native_packages:
       - imagemagick
     desktop: []
     server: []
-    container: []
+    minimal: []
 
   debian:
     common:
@@ -55,28 +55,28 @@ native_packages:
     desktop:
       - flatpak
     server: []
-    container: []
+    minimal: []
 
   fedora:
     common: []
     desktop:
       - flatpak
     server: []
-    container: []
+    minimal: []
 
   arch:
     common: []
     desktop:
       - flatpak
     server: []
-    container: []
+    minimal: []
 
   alpine:
     common: []
     desktop:
       - flatpak
     server: []
-    container: []
+    minimal: []
 
 ###############################################################################
 # Mode-based Configuration
@@ -94,7 +94,7 @@ syspkg_mode_config:
     install_native: true
     install_flatpak: false
 
-  container:
+  minimal:
     install_gui_apps: false
     install_native: true
     install_flatpak: false
