@@ -8,7 +8,10 @@
       "Bash(echo === $\\(basename \"$dir\"\\) ===:*)",
       "Bash(find:*)",
       "Bash(ansible-playbook:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git log:*)",
+      "WebSearch",
+      "WebFetch(domain:mise.jdx.dev)"
     ]
   }
 }
