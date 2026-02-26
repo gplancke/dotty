@@ -38,7 +38,7 @@ detect_os() {
 # Install python3 + pip (Linux only)
 ###############################################
 install_python() {
-  command -v python3 >/dev/null 2>&1 && return 0
+  python3 -m pip --version >/dev/null 2>&1 && return 0
 
   printf '[DOTTY] Installing python3...\n'
   case "$DISTRO" in
