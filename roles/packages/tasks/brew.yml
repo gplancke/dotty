@@ -12,11 +12,24 @@
 
 - name: Install Homebrew packages
   community.general.homebrew:
-    name: "{{ brew_packages_to_install }}"
+    name: "{{ brew_simple_packages }}"
     state: present
     path: "{{ homebrew_prefix }}/bin"
   when:
     - homebrew_check.stat.exists
-    - brew_packages_to_install | default([]) | length > 0
+    - brew_simple_packages | default([]) | length > 0
+  environment:
+    PATH: "{{ homebrew_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"
+
+- name: Install Homebrew packages with custom options
+  community.general.homebrew:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    install_options: "{{ item.install_options | default(omit) }}"
+    path: "{{ homebrew_prefix }}/bin"
+  loop: "{{ brew_custom_packages | default([]) }}"
+  when:
+    - homebrew_check.stat.exists
+    - brew_custom_packages | default([]) | length > 0
   environment:
     PATH: "{{ homebrew_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"

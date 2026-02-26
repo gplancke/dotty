@@ -11,6 +11,11 @@
 # Structure: common (cross-OS, per-mode) + per-OS per-mode lists.
 # Mode hierarchy: desktop ⊃ server ⊃ minimal
 # Lists are accumulated: a desktop build includes minimal + server + desktop.
+#
+# Entries can be a plain string or a dict with keys:
+#   name:            (required) formula name
+#   state:           (optional) e.g. "head" for --HEAD installs
+#   install_options:  (optional) extra brew install flags
 ###############################################################################
 
 brew_packages:
@@ -19,8 +24,6 @@ brew_packages:
       - age
       - ca-certificates
       - curl
-      - diff-so-fancy
-      - difi
       - fd
       - fzf
       - gcc
@@ -28,7 +31,9 @@ brew_packages:
       - jq
       - llvm
       - luarocks
-      - neovim
+      - name: neovim
+        state: head
+      - socat
       - tinted-theming/tinted/tinty
       - the_silver_searcher
       - tmux
@@ -40,6 +45,9 @@ brew_packages:
     server:
       - btop
       - claude-code
+      - diff-so-fancy
+      - difi
+      - direnv
       - gh
       - lazygit
       - psviderski/tap/uncloud
@@ -47,24 +55,29 @@ brew_packages:
       - starship
     desktop:
       - cairo
+      - duckdb
+      - fossil
       - imagemagick
       - lazydocker
+      - opencode
       - trivy
+      - ttyd
 
   darwin:
     minimal:
       - openssl@3
       - qemu
-      - zsh
     server:
       - cocoapods
+      - zsh
     desktop:
       - terminal-notifier
 
   linux:
     minimal: []
     server: []
-    desktop: []
+    desktop:
+      - ideviceinstaller
 
 ###############################################################################
 # Mise Packages
@@ -74,9 +87,32 @@ brew_packages:
 ###############################################################################
 
 mise_packages:
-  minimal: []
-  server: []
-  desktop: []
+  minimal:
+    - go
+    - node
+    - npm
+    - python
+    - rust
+    - uv
+  server:
+    - ansible
+    - bun
+    - lua-language-server
+    - npm:@tailwindcss/language-server
+    - npm:@vtsls/language-server
+    - npm:@vue/language-server
+    - npm:svelte-language-server
+    - npm:typescript
+    - npm:typescript-language-server
+    - npm:vscode-langservers-extracted
+    - pnpm
+  desktop:
+    - flutter
+    - java
+    - pipx
+    - pipx:pyright
+    - pipx:ruff
+    - ruby
 
 ###############################################################################
 # Mode-based Configuration
@@ -95,6 +131,6 @@ mode_config:
     install_nix_packages: true
 
   minimal:
-    install_brew_packages: false
-    install_mise_packages: false
+    install_brew_packages: true
+    install_mise_packages: true
     install_nix_packages: false

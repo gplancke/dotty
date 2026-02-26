@@ -63,6 +63,14 @@
       }}
   when: pkg_install_brew
 
+- name: Split brew packages into simple and custom
+  ansible.builtin.set_fact:
+    brew_simple_packages: >-
+      {{ brew_packages_to_install | select('string') | list }}
+    brew_custom_packages: >-
+      {{ brew_packages_to_install | select('mapping') | list }}
+  when: pkg_install_brew
+
 # Build mise package list: accumulated mode-specific lists
 - name: Build mise package list
   ansible.builtin.set_fact:
