@@ -11,7 +11,10 @@
       "Bash(git push:*)",
       "Bash(git log:*)",
       "WebSearch",
-      "WebFetch(domain:mise.jdx.dev)"
+      "WebFetch(domain:mise.jdx.dev)",
+      "Bash(python3:*)",
+      "WebFetch(domain:docs.ansible.com)",
+      "Bash(mise ls:*)"
     ]
   }
 }
