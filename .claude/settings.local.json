@@ -5,7 +5,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git remote:*)",
-      "Bash(echo === $\\(basename \"$dir\"\\) ===:*)"
+      "Bash(echo === $\\(basename \"$dir\"\\) ===:*)",
+      "Bash(find:*)",
+      "Bash(ansible-playbook:*)"
     ]
   }
 }
