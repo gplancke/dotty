@@ -27,36 +27,36 @@ brew_packages:
     minimal:
       - age
       - ca-certificates
-      - curl
       - fd
       - fzf
-      - gcc
-      - git
       - jq
-      - llvm
-      - luarocks
-      - name: neovim
-        state: head
       - socat
-      - tinted-theming/tinted/tinty
       - the_silver_searcher
-      - tmux
-      - tree-sitter
-      - tree-sitter-cli
       - unzip
       - watch
       - zoxide
     dev:
       - btop
       - claude-code
+      - curl
       - diff-so-fancy
       - difi
       - direnv
+      - gcc
       - gh
+      - git
       - lazygit
+      - llvm
+      - luarocks
+      - name: neovim
+        state: head
       - psviderski/tap/uncloud
       - rclone
       - starship
+      - tinted-theming/tinted/tinty
+      - tmux
+      - tree-sitter
+      - tree-sitter-cli
     full:
       - cairo
       - duckdb
