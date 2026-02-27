@@ -15,6 +15,7 @@
           User: {{ target_user }}
           Home: {{ target_home }}
           Mode: {{ install_mode | default('dev') }}
+          Container: {{ is_container }}
           Features:
             - Homebrew: {{ install_homebrew }}
             - Nix: {{ install_nix }}

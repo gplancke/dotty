@@ -18,11 +18,16 @@ user_directories:
   - "{{ target_home }}/.local/src"
   - "{{ target_home }}/Workspace/Projects"
 
+# Container detection
+is_container: >-
+  {{ ansible_facts.get('virtualization_role', '') == 'guest'
+     and ansible_facts.get('virtualization_type', '') in ['docker', 'container', 'lxc', 'podman', 'containerd'] }}
+
 # Feature flags — controlled by install_mode
 install_homebrew: true
 install_nix: false
 install_mise: true
-install_docker: "{{ install_mode in ['dev', 'full'] }}"
+install_docker: "{{ install_mode in ['minimal', 'dev', 'full'] and not (is_container | bool) }}"
 
 # Essential packages
 essential_packages:
