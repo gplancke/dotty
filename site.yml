@@ -32,6 +32,7 @@
       tags: [directories]
 
     - role: shell
+      when: install_mode | default('dev') != 'minimal'
       tags: [shell]
 
     # Phase 2: Package managers
