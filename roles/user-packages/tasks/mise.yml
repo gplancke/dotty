@@ -1,8 +1,11 @@
 ---
 # Mise tool installation
 # Two-step approach per tool:
-# - If tool is NOT in global config: `mise use --global tool@latest` (adds + installs + locks)
+# - If tool is NOT in global config: `mise use --global tool@version` (adds + installs + locks)
 # - If tool IS in global config: `mise install tool` (installs at locked version, no upgrade)
+#
+# Entries can be plain names (e.g. "node") or include a version (e.g. "rust@nightly").
+# Plain names default to @latest when first added.
 
 - name: Check if mise is available
   ansible.builtin.shell:
@@ -19,7 +22,7 @@
   ansible.builtin.shell:
     cmd: |
       export PATH="{{ target_home }}/.local/bin:$PATH"
-      mise ls --global --json 2>/dev/null | grep -o '"{{ item }}"' || true
+      mise ls --global --json 2>/dev/null | grep -o '"{{ item.split("@")[0] }}"' || true
   args:
     executable: /bin/bash
   environment:
@@ -34,7 +37,7 @@
   ansible.builtin.shell:
     cmd: |
       export PATH="{{ target_home }}/.local/bin:$PATH"
-      mise use --global {{ item.item }}@latest
+      mise use --global {{ item.item if '@' in item.item else item.item + '@latest' }}
   args:
     executable: /bin/bash
   environment:
@@ -50,7 +53,7 @@
   ansible.builtin.shell:
     cmd: |
       export PATH="{{ target_home }}/.local/bin:$PATH"
-      mise install {{ item.item }}
+      mise install {{ item.item.split("@")[0] }}
   args:
     executable: /bin/bash
   environment:

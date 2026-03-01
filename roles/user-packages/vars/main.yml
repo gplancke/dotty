@@ -96,7 +96,7 @@ mise_packages:
     - node
     - npm
     - python
-    - rust
+    - rust@nightly
     - uv
   dev:
     - ansible
