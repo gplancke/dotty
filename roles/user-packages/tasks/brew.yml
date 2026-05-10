@@ -45,3 +45,14 @@
     - brew_custom_packages | default([]) | length > 0
   environment:
     PATH: "{{ homebrew_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"
+
+- name: Install Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ brew_casks_to_install }}"
+    state: present
+    path: "{{ homebrew_prefix }}/bin"
+  when:
+    - homebrew_check.stat.exists
+    - brew_casks_to_install | default([]) | length > 0
+  environment:
+    PATH: "{{ homebrew_prefix }}/bin:{{ ansible_facts['env']['PATH'] }}"

@@ -1,7 +1,7 @@
 ---
 # Package definitions for the user-packages role
 # NOTE: Native packages and GUI apps have been moved to the system-packages role
-# This role only handles: Homebrew formulae, Nix, and Mise tools
+# This role only handles: Homebrew formulae/casks, Nix, and Mise tools
 
 ###############################################################################
 # Homebrew Packages
@@ -19,6 +19,7 @@
 ###############################################################################
 
 brew_taps:
+  - anomalyco/tap
   - tinted-theming/tinted
   - psviderski/tap
 
@@ -36,34 +37,42 @@ brew_packages:
       - watch
       - zoxide
     dev:
+      - anomalyco/tap/opencode
+      - bat
       - btop
-      - claude-code
       - curl
       - diff-so-fancy
       - difi
       - direnv
+      - docker
       - gcc
       - gh
       - git
+      - git-lfs
+      - htop
       - lazygit
       - llvm
       - luarocks
+      - mkcert
       - name: neovim
         state: head
+      - nmap
       - psviderski/tap/uncloud
       - rclone
+      - sq
       - starship
       - tinted-theming/tinted/tinty
       - tmux
+      - tree
       - tree-sitter
       - tree-sitter-cli
+      - wget
     full:
       - cairo
       - duckdb
       - fossil
       - imagemagick
       - lazydocker
-      - opencode
       - trivy
       - ttyd
 
@@ -82,6 +91,28 @@ brew_packages:
     dev: []
     full:
       - ideviceinstaller
+
+brew_casks:
+  common:
+    minimal: []
+    dev:
+      - claude-code
+      - codex
+      - font-fira-mono-nerd-font
+      - font-hack-nerd-font
+      - font-jetbrains-mono-nerd-font
+    full:
+      - neovide-app
+
+  darwin:
+    minimal: []
+    dev: []
+    full: []
+
+  linux:
+    minimal: []
+    dev: []
+    full: []
 
 ###############################################################################
 # Mise Packages

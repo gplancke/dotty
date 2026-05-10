@@ -5,7 +5,7 @@
 #
 # Installation order:
 # 1. Set mode-based configuration facts
-# 2. Install Homebrew formulae
+# 2. Install Homebrew formulae and casks
 # 3. Run Nix/home-manager
 # 4. Install Mise tools
 
@@ -69,6 +69,16 @@
       {{ brew_packages_to_install | select('string') | list }}
     brew_custom_packages: >-
       {{ brew_packages_to_install | select('mapping') | list }}
+  when: pkg_install_brew
+
+# Build brew cask list: common mode-specific + OS mode-specific lists
+- name: Build brew cask list
+  ansible.builtin.set_fact:
+    brew_casks_to_install: >-
+      {{
+        (mode_hierarchy[current_mode] | map('extract', brew_casks['common']) | select('defined') | flatten) +
+        (mode_hierarchy[current_mode] | map('extract', brew_casks[os_family_key]) | select('defined') | flatten)
+      }}
   when: pkg_install_brew
 
 # Build mise package list: accumulated mode-specific lists
