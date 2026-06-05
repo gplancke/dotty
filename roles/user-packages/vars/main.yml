@@ -30,6 +30,7 @@ brew_packages:
       - ca-certificates
       - fd
       - fzf
+      - imagemagick
       - jq
       - socat
       - the_silver_searcher
@@ -71,7 +72,6 @@ brew_packages:
       - cairo
       - duckdb
       - fossil
-      - imagemagick
       - lazydocker
       - trivy
       - ttyd
