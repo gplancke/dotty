@@ -43,7 +43,6 @@ gui_apps:
 native_packages:
   darwin:
     common:
-      - libiconv
       - imagemagick
     full: []
     dev: []
