@@ -15,6 +15,10 @@
     name: "{{ gui_apps_to_install }}"
     state: present
     path: "{{ homebrew_prefix }}/bin"
+  register: brew_result
+  failed_when:
+    - brew_result.failed
+    - "'already installed' not in brew_result.msg"
   when:
     - homebrew_check.stat.exists
     - gui_apps_to_install is defined
