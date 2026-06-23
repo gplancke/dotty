@@ -18,7 +18,7 @@
   register: brew_result
   failed_when:
     - brew_result.failed
-    - "'already installed' not in brew_result.msg"
+    - "'already an App' not in brew_result.msg"
   when:
     - homebrew_check.stat.exists
     - gui_apps_to_install is defined
