@@ -27,6 +27,10 @@
     name: "{{ brew_simple_packages }}"
     state: present
     path: "{{ homebrew_prefix }}/bin"
+  register: brew_result
+  failed_when:
+    - brew_result.failed
+    - "'already installed' not in brew_result.msg"
   when:
     - homebrew_check.stat.exists
     - brew_simple_packages | default([]) | length > 0
@@ -40,6 +44,10 @@
     install_options: "{{ item.install_options | default(omit) }}"
     path: "{{ homebrew_prefix }}/bin"
   loop: "{{ brew_custom_packages | default([]) }}"
+  register: brew_result
+  failed_when:
+    - brew_result.failed
+    - "'already installed' not in brew_result.msg"
   when:
     - homebrew_check.stat.exists
     - brew_custom_packages | default([]) | length > 0
@@ -51,6 +59,10 @@
     name: "{{ brew_casks_to_install }}"
     state: present
     path: "{{ homebrew_prefix }}/bin"
+  register: brew_result
+  failed_when:
+    - brew_result.failed
+    - "'already an App' not in brew_result.msg"
   when:
     - homebrew_check.stat.exists
     - brew_casks_to_install | default([]) | length > 0
